@@ -3,7 +3,7 @@
 **Live:** https://bswxyz.github.io/the-marginalia/ · **Build notes:** https://bswxyz.github.io/the-marginalia/guide/
 
 An independent literary magazine where the margin is the interface — live, scroll-synced margin
-notes beside every essay. Part of the [Fable 25 design showcase](https://bswxyz.github.io/fable-hub/).
+notes beside every essay. Part of the [Parable 25 design showcase](https://bswxyz.github.io/fable-hub/).
 
 ---
 
@@ -90,5 +90,5 @@ TOC rail preview, the progress hairline, and the full responsive/reduced-motion/
 
 ## License
 
-[MIT](LICENSE). Design & build by **Fable** (Anthropic's Claude). All essays, authors and
+[MIT](LICENSE). Design & build by **Parable** (Anthropic's Claude). All essays, authors and
 correspondence are fictional; any resemblance to real magazines, living or defunct, is affection.
