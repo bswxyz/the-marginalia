@@ -1,0 +1,218 @@
+---
+import Base from '../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="How The Marginalia was built — the guide"
+  description="Build notes for The Marginalia: scroll-synced margin notes as an Astro content collection, drop caps, a reading-progress hairline, and shipping to GitHub Pages from /docs."
+>
+  <div class="wrap prose">
+    <p class="ey" style="display:block;margin:2.5rem 0 2rem">Design showcase · build notes</p>
+    <h1>The margin is the <em>product.</em></h1>
+    <p class="lede">
+      The Marginalia is a literary magazine whose one idea — readers writing back — is also its one
+      interface idea. These are the build notes: what carries the site, why Astro, and the exact
+      mechanics of the live margin notes.
+    </p>
+
+    <h2>The idea</h2>
+    <p>
+      Most magazine sites treat the margin as leftover space. This one treats it as the editorial
+      voice: every essay is set in a text column with a wide outer margin, and the margin holds
+      real annotations — the author second-guessing herself, the editor checking a fact. As you
+      read, the note beside the paragraph you’re on <strong>wakes up</strong>; the rest sit faded,
+      waiting their turn. The homepage repeats the trick everywhere it can: the masthead has its
+      own margin note, the table of contents previews each essay’s opening line <em>in the
+      margin</em>, even the subscribe form keeps its fine print out there.
+    </p>
+
+    <h2>The stack — why Astro content collections</h2>
+    <p>
+      Five essays, one layout, zero client-side framework: this is exactly the shape Astro is for.
+      The essays live as markdown in <code>src/content/essays/</code> with a zod schema
+      (<code>src/content.config.ts</code>) that types every field the design depends on — title,
+      dek, section, reading time, the opening line the TOC previews, and the notes themselves:
+    </p>
+    <pre><code>notes: z.record(
+  z.object(&#123;
+    kind: z.enum(['author', 'editor']),
+    text: z.string(),
+  &#125;)
+)</code></pre>
+    <p>
+      In the essay body, <code>[[noteId]]</code> anchors a note to the sentence it annotates.
+      A ~50-line renderer (<code>src/lib/essay.ts</code>) splits the body into paragraphs and
+      expands each anchor into a reference mark — the classical compositor’s sequence
+      <code>* † ‡ § ‖ ¶</code> — while collecting that paragraph’s notes. Adding an essay is
+      adding a markdown file; the TOC, pager, folios and margin all follow from the collection.
+    </p>
+
+    <h2>Signature technique — scroll-synced margin notes</h2>
+    <p>
+      The layout does the hard part. Each paragraph renders as its own two-column grid row, so a
+      note is <em>born</em> beside its paragraph — no JavaScript positioning, no absolute offsets
+      to keep in sync:
+    </p>
+    <pre><code>.pg &#123;
+  display: grid;
+  grid-template-columns: minmax(0, var(--measure)) var(--marg);
+  column-gap: clamp(2.5rem, 5vw, 4.5rem);
+&#125;
+.pg &gt; p     &#123; grid-column: 1; &#125;
+.pg &gt; .mnote &#123; grid-column: 2; grid-row: 1; &#125;</code></pre>
+    <p>
+      Notes rest at <code>opacity: .38</code>, nudged 10px into the margin. One
+      IntersectionObserver watches only the paragraphs that carry notes, using a root margin that
+      describes the reading band of the viewport — roughly where your eyes are:
+    </p>
+    <pre><code>const io = new IntersectionObserver((entries) =&gt; &#123;
+  for (const e of entries)
+    e.target.classList.toggle('live', e.isIntersecting);
+&#125;, &#123; rootMargin: '-18% 0px -46% 0px' &#125;);
+
+flow.querySelectorAll('.pg.has-note')
+    .forEach((pg) =&gt; io.observe(pg));</code></pre>
+    <pre><code>.js .can-sync .pg.live .mnote &#123;
+  opacity: 1;
+  transform: none;
+  border-color: var(--oxblood);   /* the hairline turns oxblood */
+&#125;</code></pre>
+    <p>
+      Below 880px the margin folds in. The same markup becomes a footnote system: notes hide
+      behind their reference marks (<code>display:none</code>, gated on the <code>.js</code>
+      class so nothing is ever lost without scripts), and the mark becomes a tap target that
+      toggles the note open beneath its paragraph with correct
+      <code>aria-expanded</code>/<code>aria-controls</code> wiring. With
+      <code>prefers-reduced-motion</code>, all of it stands down: notes are simply always visible,
+      fully opaque, static — the print experience.
+    </p>
+
+    <h2>Details that matter</h2>
+    <ul>
+      <li>
+        <strong>Drop caps with a fallback.</strong> <code>initial-letter: 3</code> where supported,
+        a hand-tuned <code>::first-letter</code> float everywhere else — both in Fraunces Black at
+        opsz 144, in oxblood.
+      </li>
+      <li>
+        <strong>The reading-progress hairline</strong> is a 2px fixed bar scaled by
+        <code>-rect.top / (rect.height - innerHeight)</code> in a rAF-throttled scroll handler —
+        it reaches 1 exactly when the essay’s last line clears the fold.
+      </li>
+      <li>
+        <strong>The paper is drawn, not photographed.</strong> An SVG <code>feTurbulence</code>
+        data-URI at 6% opacity, multiply-blended over <code>#efe9dd</code>, plus a fixed hairline
+        frame inset from the viewport — the whole site sits inside a printed page.
+      </li>
+      <li>
+        <strong>One easing everywhere:</strong> <code>cubic-bezier(.3,.86,.34,1)</code> — a page
+        turn that lands softly. One accent everywhere: oxblood <code>#7a2233</code>, which passes
+        WCAG AA on this paper at 8.2:1.
+      </li>
+      <li>
+        <strong>Semantics:</strong> notes are <code>&lt;aside role="note"&gt;</code> with
+        labels; reference marks are real <code>&lt;button&gt;</code>s; the TOC is an
+        <code>&lt;ol&gt;</code>; focus rings are visible and oxblood.
+      </li>
+    </ul>
+
+    <h2>Ship it</h2>
+    <p>
+      Astro builds straight into <code>docs/</code> so GitHub Pages can serve from the main
+      branch — no Actions, no second branch:
+    </p>
+    <pre><code>// astro.config.mjs
+export default defineConfig(&#123;
+  site: 'https://bswxyz.github.io',
+  base: '/the-marginalia',
+  outDir: './docs',
+&#125;);</code></pre>
+    <pre><code>npm run build
+gh repo create bswxyz/the-marginalia --public --source . --push
+gh api --method POST /repos/bswxyz/the-marginalia/pages \
+  -f 'source[branch]=main' -f 'source[path]=/docs'</code></pre>
+    <p>
+      A <code>.nojekyll</code> in <code>public/</code> rides along into the build. Internal links
+      go through <code>import.meta.env.BASE_URL</code>, which is the difference between a site
+      that works at <code>/the-marginalia/</code> and one that only worked on localhost.
+    </p>
+
+    <hr class="rule" style="margin:3rem 0" />
+    <p style="color:var(--faint);font-size:.92rem">
+      The Marginalia is a design-showcase concept — the essays, authors and letters are fictional.
+      The README maps what’s demo and what a production magazine would still need.
+    </p>
+    <p><a class="continue" href={`${base}/`}>← Back to the issue</a></p>
+  </div>
+</Base>
+
+<style>
+  .prose {
+    max-width: 46rem;
+    padding-bottom: 4rem;
+  }
+  .prose h1 {
+    font-family: var(--display);
+    font-weight: 900;
+    font-variation-settings: 'opsz' 144;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.2rem;
+  }
+  .prose h1 em {
+    font-style: italic;
+    font-weight: 600;
+  }
+  .prose .lede {
+    font-style: italic;
+    color: var(--dim);
+    font-size: 1.15rem;
+    margin-bottom: 2.5rem;
+  }
+  .prose h2 {
+    font-family: var(--display);
+    font-weight: 900;
+    font-variation-settings: 'opsz' 100;
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    letter-spacing: -0.018em;
+    margin: 2.6rem 0 0.9rem;
+  }
+  .prose p {
+    margin: 0.9rem 0;
+    font-size: 1.05rem;
+  }
+  .prose ul {
+    margin: 0.9rem 0 0.9rem 1.1rem;
+  }
+  .prose li {
+    margin: 0.55rem 0;
+    font-size: 1.02rem;
+  }
+  .prose pre {
+    background: var(--bg-lift);
+    border: 1px solid var(--line);
+    border-left: 2px solid var(--oxblood);
+    padding: 1rem 1.2rem;
+    overflow-x: auto;
+    margin: 1.2rem 0;
+    border-radius: 2px;
+  }
+  .prose pre code {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--ink);
+    background: none;
+    padding: 0;
+  }
+  .prose code {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    background: rgba(32, 28, 23, 0.06);
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+    color: var(--oxblood-deep);
+  }
+</style>

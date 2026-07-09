@@ -1,0 +1,238 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { parseEssay } from '../lib/essay';
+
+const essays = (await getCollection('essays')).sort((a, b) => a.data.order - b.data.order);
+const featured = essays[0];
+// featured pull: first two paragraphs, note anchors stripped (pass no notes)
+const featParas = parseEssay(featured.body ?? '', {}).slice(0, 2);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="The Marginalia — a quarterly of essays, criticism & letters"
+  description="Notes from the edge of the page. An independent literary magazine where the margins are wide on purpose — Issue № 14, Summer 2026."
+  current="contents"
+>
+  <!-- masthead -->
+  <section class="wrap masthead" id="top">
+    <p class="mast-issue">
+      <span class="ey">№ 14 · Summer 2026</span>
+      <span class="meta">A quarterly of essays, criticism &amp; letters</span>
+    </p>
+    <h1 class="wordmark" id="wordmark">
+      <span class="hl"><span><em>The</em></span></span>
+      <span class="hl"><span>Marginalia<span style="color:var(--oxblood)">.</span></span></span>
+    </h1>
+    <div class="mast-grid">
+      <p class="mast-dek reveal">
+        Notes from the edge of the page. <strong>The Marginalia</strong> prints the writing that
+        happens when readers talk back — and leaves the margins wide on purpose.
+      </p>
+      <aside class="mast-note reveal" role="note" aria-label="Editor's margin note">
+        <span class="nk"><span class="ref">¶</span> Ed.</span>
+        Founded on one conviction: the best readers write back. Every page here keeps an outer
+        margin, and the margin is never empty.
+      </aside>
+    </div>
+  </section>
+
+  <!-- the issue TOC -->
+  <section class="wrap" id="contents" aria-labelledby="contents-title">
+    <div class="sec-head reveal">
+      <span class="ey">In this issue</span>
+      <hr class="rule" />
+      <h2 class="sec-title" id="contents-title">Contents</h2>
+    </div>
+    <div class="toc-grid">
+      <ol class="toc reveal">
+        {
+          essays.map((e, i) => (
+            <li
+              class="toc-row"
+              data-opening={e.data.opening}
+              data-attr={`${e.data.author} · p. ${String(7 + i * 9).padStart(2, '0')}`}
+            >
+              <a class="toc-link" href={`${base}/essays/${e.id}/`}>
+                <span class="toc-folio">{String(i + 1).padStart(2, '0')}</span>
+                <span class="toc-main">
+                  <span class="toc-title">{e.data.title}</span>
+                  <span class="toc-dek">{e.data.dek}</span>
+                  <span class="toc-meta meta">
+                    By {e.data.author} · {e.data.readingTime} min
+                  </span>
+                </span>
+                <span class="toc-kind">
+                  <span class="meta">{e.data.section}</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+      <aside class="toc-rail reveal" aria-hidden="true">
+        <span class="rail-label ey">Opening line</span>
+        <div class="rail-swap">
+          <p class="rail-quote" id="rail-quote">
+            Rest on an entry and its first sentence appears here — the margin gets everything early.
+          </p>
+          <span class="rail-attr meta" id="rail-attr">— the editors</span>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- featured pull -->
+  <section class="wrap featured" aria-labelledby="featured-title">
+    <div class="sec-head reveal">
+      <span class="ey">Begin anywhere</span>
+      <hr class="rule" />
+      <h2 class="sec-title">From the issue</h2>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-body reveal">
+        <p class="feat-rubric">
+          <span class="ey">{featured.data.section} 01</span>
+          <span class="meta">By {featured.data.author} · {featured.data.readingTime} min</span>
+        </p>
+        <h3 class="feat-title" id="featured-title">
+          <a href={`${base}/essays/${featured.id}/`}>{featured.data.title}</a>
+        </h3>
+        <p class="feat-dek">{featured.data.dek}</p>
+        {featParas.map((p, i) => <p class:list={[{ drop: i === 0 }]} set:html={p.html} />)}
+        <a class="continue" href={`${base}/essays/${featured.id}/`}>Continue reading →</a>
+      </div>
+      <aside class="feat-aside reveal" role="note" aria-label="Editor's margin note">
+        <span class="nk"><span class="ref">*</span> Why start here</span>
+        <p>
+          Because Kesselman does the thing this magazine is for: she writes <em>to</em> you, then
+          shows you how rare that has become. On the essay page, her own margin notes read along
+          beside you.
+        </p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- letters & colophon -->
+  <section class="band" id="letters" aria-labelledby="letters-title">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="ey">Correspondence</span>
+        <hr class="rule" />
+        <h2 class="sec-title" id="letters-title">Letters &amp; colophon</h2>
+      </div>
+      <div class="letters-grid">
+        <div class="letter reveal">
+          <h3>Re: № 13, “The Comma Wars”</h3>
+          <p>
+            You printed that the semicolon is “a comma with ambitions.” I have taught punctuation
+            for thirty years and I want you to know I read the line aloud to an empty classroom and
+            then sat down for a while. Renewing for two years.
+            <span class="sig meta">— R. Achebe, Enugu</span>
+          </p>
+        </div>
+        <div class="letter reveal">
+          <h3>Re: the margins generally</h3>
+          <p>
+            My copy of № 12 came back from a friend with her own notes crowding yours. I believe
+            this makes her a contributor. She believes it makes her a critic. Please advise, as the
+            book is now unreadable and much improved.
+            <span class="sig meta">— T. Lindqvist, Malmö</span>
+          </p>
+        </div>
+        <div class="colophon reveal">
+          <h3>Colophon</h3>
+          <dl>
+            <dt>Set in</dt>
+            <dd>Fraunces, Spectral &amp; IBM Plex Mono</dd>
+            <dt>Paper</dt>
+            <dd>Munken Print Cream, 90 gsm</dd>
+            <dt>Printed by</dt>
+            <dd>Drukkerij Anders, Ghent · sewn, not stapled</dd>
+            <dt>Circulation</dt>
+            <dd>4,120 and holding, on principle</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- subscribe -->
+  <section class="wrap subscribe" id="subscribe" aria-labelledby="subscribe-title">
+    <div class="sub-grid">
+      <div class="reveal">
+        <p class="ey" style="margin-bottom:1.2rem">Subscribe</p>
+        <h2 class="sub-title" id="subscribe-title">Four issues a year.<br /><em>Sewn, not stapled.</em></h2>
+        <p class="sub-lede">
+          № 15 arrives in October. Subscribers get the print edition, the online archive, and the
+          editors’ margin notes in full — including the ones the authors argued with.
+        </p>
+        <form class="sub-form" id="sub-form" novalidate>
+          <label class="meta" for="sub-email" style="position:absolute;left:-200vw">Email address</label>
+          <input id="sub-email" type="email" name="email" placeholder="you@somewhere.quiet" autocomplete="email" required />
+          <button type="submit">Reserve № 15</button>
+        </form>
+        <p class="sub-note" id="sub-note" role="status" aria-live="polite"></p>
+      </div>
+      <aside class="sub-aside reveal" role="note" aria-label="Margin note">
+        <span class="nk"><span class="ref">†</span> The fine print</span>
+        48 pages · shipped worldwide · €12 a quarter. Cancel any time — by letter, if you like. We
+        answer those.
+      </aside>
+    </div>
+  </section>
+
+  <script>
+    /* — masthead: clipped-line intro — */
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => document.getElementById('wordmark')?.classList.add('go'));
+    });
+
+    /* — TOC rail: hover/focus an entry, its opening line appears in the margin — */
+    const rail = document.querySelector<HTMLElement>('.toc-rail');
+    const quote = document.getElementById('rail-quote');
+    const attr = document.getElementById('rail-attr');
+    const rows = document.querySelectorAll<HTMLElement>('.toc-row');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let railTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const show = (row: HTMLElement) => {
+      if (!rail || !quote || !attr) return;
+      rows.forEach((r) => r.classList.toggle('hot', r === row));
+      const swap = () => {
+        quote.textContent = `“${row.dataset.opening ?? ''}”`;
+        attr.textContent = `— ${row.dataset.attr ?? ''}`;
+        rail.classList.remove('swapping');
+      };
+      if (reduce) {
+        swap();
+      } else {
+        rail.classList.add('swapping');
+        clearTimeout(railTimer);
+        railTimer = setTimeout(swap, 180);
+      }
+    };
+    rows.forEach((row) => {
+      row.addEventListener('mouseenter', () => show(row));
+      row.addEventListener('focusin', () => show(row));
+    });
+
+    /* — subscribe: demo intercept, nothing is sent anywhere — */
+    const form = document.getElementById('sub-form') as HTMLFormElement | null;
+    const note = document.getElementById('sub-note');
+    form?.addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      if (!note) return;
+      const email = (form.elements.namedItem('email') as HTMLInputElement | null)?.value.trim();
+      if (!email || !email.includes('@')) {
+        note.classList.remove('ok');
+        note.textContent = 'That address looks unfinished — like a sentence missing its verb.';
+        return;
+      }
+      note.classList.add('ok');
+      note.textContent = 'Noted in the margin. № 15 will find you. (A design demo — nothing was sent.)';
+      form.reset();
+    });
+  </script>
+</Base>

@@ -1,0 +1,157 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { parseEssay } from '../../lib/essay';
+
+export async function getStaticPaths() {
+  const essays = (await getCollection('essays')).sort((a, b) => a.data.order - b.data.order);
+  return essays.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: {
+      entry,
+      prev: essays[(i + essays.length - 1) % essays.length],
+      next: essays[(i + 1) % essays.length],
+      index: i,
+      total: essays.length,
+    },
+  }));
+}
+
+const { entry, prev, next, index, total } = Astro.props;
+const paras = parseEssay(entry.body ?? '', entry.data.notes);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const nn = String(index + 1).padStart(2, '0');
+const tt = String(total).padStart(2, '0');
+const kindLabel = { author: 'Author’s note', editor: 'Editor' };
+---
+
+<Base
+  title={`${entry.data.title} — The Marginalia`}
+  description={entry.data.dek}
+  folio={`${entry.data.section} ${nn} / ${tt}`}
+>
+  <div class="progress" aria-hidden="true"></div>
+
+  <article class="essay wrap">
+    <header class="essay-head">
+      <p class="essay-rubric">
+        <span class="ey">{entry.data.section} · № 14 · Summer 2026</span>
+      </p>
+      <h1 class="essay-title">{entry.data.title}</h1>
+      <p class="essay-dek">{entry.data.dek}</p>
+      <p class="essay-byline">
+        <span class="meta" style="color:var(--ink)">By {entry.data.author}</span>
+        <span class="meta">{entry.data.readingTime} min</span>
+        <span class="meta" style="color:var(--faint)">{nn} of {tt}</span>
+      </p>
+    </header>
+
+    <div class="essay-flow" id="flow">
+      {
+        paras.map((p, i) => (
+          <div class:list={['pg', { 'has-note': p.notes.length > 0 }]}>
+            <p class:list={[{ drop: i === 0 }]} set:html={p.html} />
+            {p.notes.map((n) => (
+              <aside class="mnote" id={`note-${n.id}`} role="note" aria-label={`Margin note ${n.ref}`}>
+                <span class="nk">
+                  <span class="ref">{n.ref}</span> {kindLabel[n.kind]}
+                </span>
+                <span class="mnote-text" set:html={n.html} />
+              </aside>
+            ))}
+          </div>
+        ))
+      }
+
+      <p class="endmark" aria-hidden="true">⁂</p>
+      <p class="bio">{entry.data.bio}</p>
+
+      <nav class="essay-pager" aria-label="More from this issue">
+        <a class="pager-link" href={`${base}/essays/${prev.id}/`}>
+          <span class="meta">← Previous</span>
+          <span class="pager-title">{prev.data.title}</span>
+        </a>
+        <a class="pager-link pager-next" href={`${base}/essays/${next.id}/`}>
+          <span class="meta">Next →</span>
+          <span class="pager-title">{next.data.title}</span>
+        </a>
+      </nav>
+    </div>
+  </article>
+
+  <script>
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const fold = window.matchMedia('(max-width: 880px)');
+    const flow = document.getElementById('flow');
+    const bar = document.querySelector<HTMLElement>('.progress');
+    const article = document.querySelector<HTMLElement>('article.essay');
+
+    /* — reading-progress hairline — */
+    if (bar && article) {
+      let ticking = false;
+      const paint = () => {
+        ticking = false;
+        const rect = article.getBoundingClientRect();
+        const span = rect.height - window.innerHeight;
+        const p = span > 0 ? Math.min(1, Math.max(0, -rect.top / span)) : 1;
+        bar.style.transform = `scaleX(${p})`;
+      };
+      const onScroll = () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(paint);
+        }
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll);
+      paint();
+    }
+
+    /* — scroll-synced margin notes (desktop) — */
+    if (flow && !reduce && 'IntersectionObserver' in window) {
+      flow.classList.add('can-sync');
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) e.target.classList.toggle('live', e.isIntersecting);
+        },
+        { rootMargin: '-18% 0px -46% 0px' }
+      );
+      flow.querySelectorAll('.pg.has-note').forEach((pg) => io.observe(pg));
+    }
+
+    /* — reference marks: flash the note on desktop, disclose it on mobile — */
+    const markers = document.querySelectorAll<HTMLButtonElement>('.mk');
+    const applyFold = () => {
+      if (!flow) return;
+      flow.classList.toggle('fold', fold.matches);
+      markers.forEach((mk) => {
+        const note = document.getElementById(mk.getAttribute('aria-controls') || '');
+        if (!note) return;
+        if (fold.matches && !reduce) {
+          note.classList.remove('open');
+          mk.setAttribute('aria-expanded', 'false');
+        } else {
+          mk.setAttribute('aria-expanded', 'true');
+        }
+      });
+    };
+    applyFold();
+    fold.addEventListener('change', applyFold);
+
+    markers.forEach((mk) => {
+      mk.addEventListener('click', () => {
+        const note = document.getElementById(mk.getAttribute('aria-controls') || '');
+        if (!note) return;
+        if (fold.matches && !reduce) {
+          const open = note.classList.toggle('open');
+          mk.setAttribute('aria-expanded', String(open));
+        } else {
+          note.classList.remove('flash');
+          void note.offsetWidth; // restart the animation
+          note.classList.add('flash');
+          note.closest('.pg')?.classList.add('live');
+        }
+      });
+    });
+  </script>
+</Base>

@@ -1,0 +1,656 @@
+/* ————————————————————————————————————————————————————————————
+   THE MARGINALIA — design tokens
+   Warm paper, one oxblood accent, wide margins as identity.
+   ———————————————————————————————————————————————————————————— */
+:root {
+  --bg: #efe9dd;
+  --bg-deep: #e6ddcb;      /* the letters/colophon band */
+  --bg-lift: #f4efe6;      /* raised card / input */
+  --ink: #201c17;
+  --dim: #5c5346;
+  --faint: #8d857a;        /* decorative / large text only (3:1 on paper) */
+  --oxblood: #7a2233;      /* the single accent — 8.2:1 on paper */
+  --oxblood-deep: #5c1a27;
+  --line: rgba(32, 28, 23, 0.14);
+  --line-soft: rgba(32, 28, 23, 0.07);
+  --max: 1200px;
+  --measure: 33.5rem;      /* essay text column */
+  --marg: 15.5rem;         /* the outer margin that holds the notes */
+  --frame: clamp(10px, 2.2vw, 26px);
+  --pad: clamp(1.4rem, 6vw, 6.5rem);
+  /* signature easing — "page-settle": a turn that lands softly, no bounce */
+  --ease-page: cubic-bezier(0.3, 0.86, 0.34, 1);
+  --display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --body: 'Spectral', Georgia, 'Times New Roman', serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+::selection { background: rgba(122, 34, 51, 0.18); }
+
+a { color: var(--oxblood); text-decoration-color: rgba(122, 34, 51, 0.35); text-underline-offset: 3px; }
+a:hover { text-decoration-color: var(--oxblood); }
+
+:focus-visible {
+  outline: 2px solid var(--oxblood);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ——— the fixed paper: grain + the ruled frame of a printed page ——— */
+.paper {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 252, 244, 0.55), rgba(255, 252, 244, 0) 60%),
+    var(--bg);
+}
+.paper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.06;
+  mix-blend-mode: multiply;
+}
+.paper::after {
+  content: '';
+  position: absolute;
+  inset: var(--frame);
+  border: 1px solid var(--line-soft);
+  pointer-events: none;
+}
+
+.wrap {
+  max-width: var(--max);
+  margin-inline: auto;
+  padding-inline: var(--pad);
+}
+
+/* ——— shared vocabulary ——— */
+.ey {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--oxblood);
+}
+.meta {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.rule { border: 0; height: 1px; background: var(--line); }
+
+/* reference marks — the classical footnote sequence */
+.mk {
+  font-family: var(--body);
+  font-size: 0.78em;
+  font-weight: 500;
+  color: var(--oxblood);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 0 0.14em;
+  vertical-align: super;
+  line-height: 0;
+  transition: color 0.4s var(--ease-page);
+}
+.mk:hover { color: var(--oxblood-deep); }
+
+/* ——— header ——— */
+.site-head {
+  padding-top: calc(var(--frame) + 1.1rem);
+  padding-bottom: 1.1rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.brand {
+  font-family: var(--display);
+  font-weight: 900;
+  font-variation-settings: 'opsz' 60;
+  font-size: 1.18rem;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand:hover { color: var(--oxblood); }
+.site-nav { display: flex; gap: 1.4rem; align-items: baseline; }
+.site-nav a {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.site-nav a:hover, .site-nav a[aria-current='page'] { color: var(--oxblood); }
+
+/* ——— reading-progress hairline ——— */
+.progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--oxblood);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  z-index: 60;
+}
+
+/* ——— hero / masthead ——— */
+.masthead { padding-block: clamp(3rem, 9vh, 6.5rem) clamp(3.5rem, 9vh, 6rem); }
+.mast-issue {
+  display: flex;
+  align-items: baseline;
+  gap: 1.1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.6rem;
+}
+.wordmark {
+  font-family: var(--display);
+  font-weight: 900;
+  font-variation-settings: 'opsz' 144;
+  font-size: clamp(3.2rem, 11.5vw, 9.2rem);
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  margin: 0 0 1.8rem;
+}
+.wordmark em { font-style: italic; font-weight: 600; letter-spacing: -0.02em; }
+.hl { display: block; overflow: hidden; padding-bottom: 0.06em; margin-bottom: -0.06em; }
+.hl > span { display: block; }
+.js .hl > span {
+  transform: translateY(112%);
+  transition: transform 1.15s var(--ease-page);
+}
+.js .go .hl:nth-child(1) > span { transition-delay: 0.18s; }
+.js .go .hl:nth-child(2) > span { transition-delay: 0.32s; }
+.js .go .hl > span { transform: none; }
+
+.mast-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--marg);
+  column-gap: clamp(2.5rem, 5vw, 4.5rem);
+  align-items: end;
+}
+.mast-dek {
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
+  font-style: italic;
+  color: var(--dim);
+  max-width: 34ch;
+  line-height: 1.5;
+}
+.mast-dek strong { color: var(--ink); font-weight: 500; font-style: normal; }
+
+/* the hero's own margin note — the thesis, demonstrated */
+.mast-note {
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--dim);
+  border-left: 2px solid var(--oxblood);
+  padding-left: 0.95rem;
+}
+.mast-note .nk { display: block; margin-bottom: 0.3rem; }
+
+/* ——— section scaffolding ——— */
+section { padding-block: clamp(3rem, 8vh, 5.5rem); }
+.sec-head { display: flex; align-items: baseline; gap: 1.2rem; margin-bottom: 2.4rem; }
+.sec-head .rule { flex: 1; }
+h2.sec-title {
+  font-family: var(--display);
+  font-weight: 900;
+  font-variation-settings: 'opsz' 100;
+  font-size: clamp(1.7rem, 3.6vw, 2.6rem);
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+/* ——— the issue TOC ——— */
+.toc-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--marg);
+  column-gap: clamp(2.5rem, 5vw, 4.5rem);
+  align-items: start;
+}
+.toc { list-style: none; }
+.toc-row { border-top: 1px solid var(--line); }
+.toc-row:last-child { border-bottom: 1px solid var(--line); }
+.toc-link {
+  display: grid;
+  grid-template-columns: 3.2rem minmax(0, 1fr) auto;
+  column-gap: 1.4rem;
+  align-items: baseline;
+  padding: 1.35rem 0.4rem 1.45rem;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  transition: background 0.5s var(--ease-page);
+}
+.toc-link::before {
+  content: '';
+  position: absolute;
+  left: -0.9rem;
+  top: 1.55rem;
+  width: 0.45rem;
+  height: 2px;
+  background: var(--oxblood);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 0.5s var(--ease-page);
+}
+.toc-link:hover::before, .toc-link:focus-visible::before { transform: none; }
+.toc-link:hover, .toc-row.hot .toc-link { background: rgba(255, 252, 244, 0.5); }
+.toc-folio {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--faint);
+  transition: color 0.4s var(--ease-page);
+}
+.toc-row.hot .toc-folio, .toc-link:hover .toc-folio { color: var(--oxblood); }
+.toc-main { min-width: 0; }
+.toc-title {
+  font-family: var(--display);
+  font-weight: 900;
+  font-variation-settings: 'opsz' 90;
+  font-size: clamp(1.35rem, 2.6vw, 1.9rem);
+  line-height: 1.08;
+  letter-spacing: -0.018em;
+  margin-bottom: 0.4rem;
+  transition: color 0.4s var(--ease-page);
+}
+.toc-link:hover .toc-title { color: var(--oxblood); }
+.toc-dek { color: var(--dim); font-size: 0.98rem; line-height: 1.55; max-width: 52ch; }
+.toc-meta { display: block; margin-top: 0.55rem; }
+.toc-kind { text-align: right; }
+.toc-kind .meta { color: var(--faint); }
+
+/* the TOC margin rail — hover an entry, its first line appears here */
+.toc-rail {
+  position: sticky;
+  top: 5.5rem;
+  border-left: 1px solid var(--line);
+  padding-left: 1.1rem;
+  min-height: 15rem;
+}
+.rail-label { display: block; margin-bottom: 0.9rem; }
+.rail-quote {
+  font-size: 1.02rem;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--ink);
+}
+.rail-attr { margin-top: 0.9rem; display: block; color: var(--faint); }
+.js .rail-swap { transition: opacity 0.45s var(--ease-page), transform 0.45s var(--ease-page); }
+.js .toc-rail.swapping .rail-swap { opacity: 0; transform: translateY(6px); }
+
+/* ——— featured pull ——— */
+.featured { background: transparent; }
+.feat-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--marg);
+  column-gap: clamp(2.5rem, 5vw, 4.5rem);
+}
+.feat-body { max-width: var(--measure); }
+.feat-rubric { display: flex; gap: 1rem; align-items: baseline; margin-bottom: 1.1rem; flex-wrap: wrap; }
+.feat-title {
+  font-family: var(--display);
+  font-weight: 900;
+  font-variation-settings: 'opsz' 130;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.8rem;
+}
+.feat-title a { color: inherit; text-decoration: none; }
+.feat-title a:hover { color: var(--oxblood); }
+.feat-dek { font-style: italic; color: var(--dim); font-size: 1.1rem; line-height: 1.55; margin-bottom: 1.6rem; }
+.feat-body > p { font-size: 1.14rem; margin-bottom: 1.3rem; }
+.continue {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--oxblood);
+  text-decoration: none;
+  border-bottom: 1px solid var(--oxblood);
+  padding-bottom: 0.3rem;
+  margin-top: 0.4rem;
+  transition: letter-spacing 0.5s var(--ease-page);
+}
+.continue:hover { letter-spacing: 0.22em; }
+.feat-aside { border-left: 1px solid var(--line); padding-left: 1.1rem; align-self: start; position: sticky; top: 5.5rem; }
+.feat-aside p { font-size: 0.86rem; line-height: 1.55; color: var(--dim); margin-top: 0.55rem; }
+
+/* ——— letters & colophon band ——— */
+.band {
+  background: var(--bg-deep);
+  border-block: 1px solid var(--line);
+}
+.letters-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(0, 0.85fr);
+  gap: clamp(1.8rem, 4vw, 3.5rem);
+}
+.letter h3, .colophon h3 {
+  font-family: var(--display);
+  font-weight: 900;
+  font-variation-settings: 'opsz' 60;
+  font-size: 1.12rem;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.7rem;
+}
+.letter p { font-size: 0.97rem; color: var(--dim); line-height: 1.65; }
+.letter .sig { display: block; margin-top: 0.8rem; font-style: normal; }
+.colophon dl { font-size: 0.9rem; }
+.colophon dt {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-top: 0.85rem;
+}
+.colophon dd { color: var(--dim); margin: 0.1rem 0 0; }
+
+/* ——— subscribe ——— */
+.subscribe { text-align: left; }
+.sub-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--marg);
+  column-gap: clamp(2.5rem, 5vw, 4.5rem);
+  align-items: end;
+}
+.sub-title {
+  font-family: var(--display);
+  font-weight: 900;
+  font-variation-settings: 'opsz' 130;
+  font-size: clamp(2rem, 5.5vw, 3.8rem);
+  line-height: 1;
+  letter-spacing: -0.028em;
+  margin-bottom: 1rem;
+}
+.sub-title em { font-style: italic; font-weight: 600; }
+.sub-lede { color: var(--dim); font-size: 1.05rem; max-width: 46ch; margin-bottom: 1.8rem; }
+.sub-form { display: flex; gap: 0.7rem; max-width: 30rem; flex-wrap: wrap; }
+.sub-form input[type='email'] {
+  flex: 1 1 14rem;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  padding: 0.85rem 1rem;
+  background: var(--bg-lift);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  border-radius: 2px;
+}
+.sub-form input::placeholder { color: var(--faint); }
+.sub-form button {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.85rem 1.5rem;
+  background: var(--oxblood);
+  color: #f6efe2;
+  border: 1px solid var(--oxblood);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.4s var(--ease-page);
+}
+.sub-form button:hover { background: var(--oxblood-deep); }
+.sub-note { margin-top: 0.9rem; font-size: 0.86rem; color: var(--faint); font-style: italic; min-height: 1.4em; }
+.sub-note.ok { color: var(--oxblood); }
+.sub-aside { border-left: 1px solid var(--line); padding-left: 1.1rem; font-size: 0.86rem; color: var(--dim); line-height: 1.55; }
+
+/* ——— footer ——— */
+.site-foot {
+  border-top: 1px solid var(--line);
+  padding-block: 2.2rem calc(var(--frame) + 1.6rem);
+}
+.foot-grid { display: flex; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; align-items: baseline; }
+.foot-grid .meta a { color: var(--dim); text-decoration: none; }
+.foot-grid .meta a:hover { color: var(--oxblood); }
+.credit { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; color: var(--dim); }
+.credit a { color: var(--oxblood); text-decoration: none; border-bottom: 1px solid rgba(122, 34, 51, 0.35); }
+.credit a:hover { border-color: var(--oxblood); }
+
+/* ————————————————————————————————————————————————————————————
+   ESSAY PAGES — wide outer margin with live notes
+   ———————————————————————————————————————————————————————————— */
+.essay-head { padding-block: clamp(2.5rem, 7vh, 5rem) clamp(2rem, 5vh, 3.2rem); }
+.essay-rubric { display: flex; gap: 1rem; align-items: baseline; flex-wrap: wrap; margin-bottom: 1.4rem; }
+.essay-title {
+  font-family: var(--display);
+  font-weight: 900;
+  font-variation-settings: 'opsz' 144;
+  font-size: clamp(2.4rem, 6.5vw, 4.8rem);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  max-width: 16ch;
+  margin-bottom: 1.1rem;
+}
+.essay-dek {
+  font-style: italic;
+  font-size: clamp(1.08rem, 1.9vw, 1.32rem);
+  color: var(--dim);
+  line-height: 1.55;
+  max-width: 44ch;
+  margin-bottom: 1.7rem;
+}
+.essay-byline { display: flex; gap: 1.1rem; align-items: baseline; flex-wrap: wrap; }
+
+.essay-flow { padding-bottom: clamp(3rem, 8vh, 5rem); }
+
+/* each paragraph owns a grid row: text column + margin column */
+.pg {
+  display: grid;
+  grid-template-columns: minmax(0, var(--measure)) var(--marg);
+  column-gap: clamp(2.5rem, 5vw, 4.5rem);
+  align-items: start;
+}
+.pg > p {
+  grid-column: 1;
+  font-size: clamp(1.14rem, 1.6vw, 1.22rem);
+  line-height: 1.72;
+  margin-bottom: 1.45rem;
+}
+.pg > p em { font-style: italic; }
+
+/* drop cap — initial-letter with float fallback */
+.drop::first-letter {
+  float: left;
+  font-family: var(--display);
+  font-weight: 900;
+  font-variation-settings: 'opsz' 144;
+  font-size: 3.35em;
+  line-height: 0.78;
+  padding: 0.1em 0.12em 0 0;
+  color: var(--oxblood);
+}
+@supports (initial-letter: 3) or (-webkit-initial-letter: 3) {
+  .drop::first-letter {
+    float: none;
+    font-size: 1em;
+    line-height: 1;
+    padding: 0 0.12em 0 0;
+    -webkit-initial-letter: 3;
+    initial-letter: 3;
+  }
+}
+
+/* the margin note itself */
+.mnote {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--dim);
+  border-left: 1px solid var(--line);
+  padding-left: 0.95rem;
+  margin-top: 0.35rem;
+}
+.mnote + .mnote { margin-top: 1rem; grid-row: auto; }
+.nk {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--oxblood);
+  display: block;
+  margin-bottom: 0.3rem;
+}
+.nk .ref { font-family: var(--body); font-size: 0.9rem; letter-spacing: 0; vertical-align: -0.05em; }
+
+/* scroll-sync: notes rest dim, wake when their paragraph is being read */
+.js .can-sync .mnote {
+  opacity: 0.38;
+  transform: translateX(10px);
+  transition:
+    opacity 0.75s var(--ease-page),
+    transform 0.75s var(--ease-page),
+    border-color 0.75s var(--ease-page);
+}
+.js .can-sync .pg.live .mnote {
+  opacity: 1;
+  transform: none;
+  border-color: var(--oxblood);
+}
+.mnote.flash { animation: noteflash 1.2s var(--ease-page); }
+@keyframes noteflash {
+  0% { background: rgba(122, 34, 51, 0.1); }
+  100% { background: transparent; }
+}
+
+/* essay end matter */
+.endmark {
+  font-family: var(--display);
+  color: var(--oxblood);
+  font-size: 1.5rem;
+  letter-spacing: 0.4em;
+  margin: 0.6rem 0 2.2rem;
+}
+.bio {
+  max-width: var(--measure);
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--dim);
+  border-top: 1px solid var(--line);
+  padding-top: 1.4rem;
+}
+.essay-pager {
+  margin-top: 3rem;
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  padding-top: 1.6rem;
+}
+.pager-link { text-decoration: none; color: inherit; }
+.pager-link:hover .pager-title { color: var(--oxblood); }
+.pager-link .meta { display: block; margin-bottom: 0.45rem; }
+.pager-title {
+  font-family: var(--display);
+  font-weight: 900;
+  font-variation-settings: 'opsz' 80;
+  font-size: 1.15rem;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  transition: color 0.4s var(--ease-page);
+}
+.pager-next { text-align: right; }
+
+/* ——— reveal on scroll ——— */
+.js .reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.95s var(--ease-page), transform 0.95s var(--ease-page);
+}
+.js .reveal.in { opacity: 1; transform: none; }
+
+/* ————————————————————————————————————————————————————————————
+   BREAKPOINTS
+   ———————————————————————————————————————————————————————————— */
+@media (max-width: 1020px) {
+  :root { --marg: 12.5rem; }
+}
+
+@media (max-width: 880px) {
+  /* the margin folds in: notes become footnote disclosures */
+  .mast-grid, .toc-grid, .feat-grid, .sub-grid { grid-template-columns: minmax(0, 1fr); row-gap: 2rem; }
+  .toc-rail, .feat-aside { display: none; }
+  .mast-note, .sub-aside { border-left-color: var(--oxblood); max-width: 34rem; }
+  .pg { grid-template-columns: minmax(0, 1fr); }
+  .mnote {
+    grid-column: 1;
+    grid-row: auto;
+    margin: -0.5rem 0 1.45rem;
+    max-width: var(--measure);
+    background: var(--bg-lift);
+    border: 1px solid var(--line);
+    border-left: 2px solid var(--oxblood);
+    padding: 0.8rem 1rem;
+  }
+  /* with JS, the note hides behind its reference mark until tapped */
+  .js .can-sync .mnote { opacity: 1; transform: none; }
+  .js .fold .mnote { display: none; }
+  .js .fold .mnote.open { display: block; animation: notein 0.5s var(--ease-page); }
+  @keyframes notein {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: none; }
+  }
+  .js .fold .mk {
+    background: rgba(122, 34, 51, 0.08);
+    border-radius: 3px;
+    padding: 0 0.3em;
+  }
+  .letters-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  :root { --pad: 1.25rem; }
+  .site-nav { gap: 1rem; }
+  .toc-link { grid-template-columns: 2.2rem minmax(0, 1fr); }
+  .toc-kind { display: none; }
+  .essay-pager { grid-template-columns: 1fr; }
+  .pager-next { text-align: left; }
+}
+
+/* ————————————————————————————————————————————————————————————
+   REDUCED MOTION — notes always visible, nothing travels
+   ———————————————————————————————————————————————————————————— */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .js .hl > span { transform: none; }
+  .js .reveal { opacity: 1; transform: none; }
+  .js .can-sync .mnote { opacity: 1; transform: none; }
+  .js .fold .mnote { display: block; }
+}
