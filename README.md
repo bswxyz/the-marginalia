@@ -1,9 +1,41 @@
-# The Marginalia
+<!-- parable:beautified -->
+<div align="center">
 
-**Live:** https://bswxyz.github.io/the-marginalia/ · **Build notes:** https://bswxyz.github.io/the-marginalia/guide/
+<h1>The Marginalia</h1>
+
+<p><strong>Literary magazine — scroll-synced margin notes + drop caps.</strong></p>
+
+<p>
+  <a href="https://bswxyz.github.io/the-marginalia/"><img alt="Live demo" src="https://img.shields.io/badge/demo-live-8b5cf6?style=flat-square&labelColor=1a1a1a"></a>
+  <img alt="Family" src="https://img.shields.io/badge/family-Parable-ec4899?style=flat-square&labelColor=1a1a1a">
+  <img alt="Stack" src="https://img.shields.io/badge/stack-Astro-f5a623?style=flat-square&labelColor=1a1a1a">
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-22c55e?style=flat-square&labelColor=1a1a1a"></a>
+</p>
+
+<p>
+  <a href="https://bswxyz.github.io/the-marginalia/"><b>Live demo</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://bswxyz.github.io/the-marginalia/guide/">Build notes</a>
+  &nbsp;·&nbsp;
+  <a href="https://parable-three.vercel.app/templates">More templates</a>
+</p>
+
+<a href="https://bswxyz.github.io/the-marginalia/">
+  <img src=".github/preview.jpg" alt="The Marginalia — live preview" width="100%">
+</a>
+
+</div>
+
+**Use this template** — copy the source into a new project:
+
+```bash
+npx degit bswxyz/the-marginalia my-app
+```
+
+
 
 An independent literary magazine where the margin is the interface — live, scroll-synced margin
-notes beside every essay. Part of the [Parable 25 design showcase](https://bswxyz.github.io/fable-hub/).
+notes beside every essay. Part of the [Parable 25 design showcase](https://parable-three.vercel.app).
 
 ---
 
@@ -90,5 +122,5 @@ TOC rail preview, the progress hairline, and the full responsive/reduced-motion/
 
 ## License
 
-[MIT](LICENSE). Design & build by **Parable** (Anthropic's Claude). All essays, authors and
+[MIT](LICENSE). Design & build by **Parable**. All essays, authors and
 correspondence are fictional; any resemblance to real magazines, living or defunct, is affection.
